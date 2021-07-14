@@ -1,4 +1,4 @@
-# oso Nest.js Demo
+# Oso Nest.js Demo
 
 ## Contents
 
@@ -17,7 +17,7 @@
 
 ## Introduction
 
-This demo app provides an example implementation of oso authorization in the
+This demo app provides an example implementation of Oso authorization in the
 context of NestJS, a popular Node.js progressive framework.
 
 The tutorial below examines possible use-cases, including
@@ -27,7 +27,7 @@ implementations.
 
 The problem domain is a document management system that requires various kinds
 of access permissions in order to perform certain actions documents. Those
-roles and permissions are described by rules written in oso's policy language,
+roles and permissions are described by rules written in Oso's policy language,
 [Polar](https://docs.osohq.com/using/polar-syntax.html).
 
 ### Installation
@@ -35,7 +35,7 @@ roles and permissions are described by rules written in oso's policy language,
 1. Clone this repository and install dependencies:
 
   ```console
-  $ git clone https://github.com/osohq/oso-nest-demo.git && cd oso-nest-demo && yarn
+  $ git clone https://github.com/osohq/oso-nest-doc-mgmt.git && cd oso-nest-doc-mgmt && yarn
   ```
 
 1. Start the server:
@@ -70,7 +70,7 @@ This demo app has five modules in addition to the main App module:
      resources based on authentication.
   1. [`DocumentModule`](./src/document/)&mdash;provides access to user
      documents.
-  1. [`OsoModule`](./src/oso/)&mdash;configures oso and provides resources for
+  1. [`OsoModule`](./src/oso/)&mdash;configures Oso and provides resources for
      authorizing access to documents based on users, projects, and document
      status.
   1. [`ProjectModule`](./src/project/)&mdash;manages "projects" that have user
@@ -104,16 +104,16 @@ $ curl --user john:changeme http://localhost:3000/document/1
 {"id":1,"ownerId":3,"document":"This document...","membersOnly":true}
 ```
 
-## Authorization with oso
+## Authorization with Oso
 
 To add more flexible access controls, we implemented a richer authorization
-scheme using the [oso javascript library](https://www.npmjs.com/package/oso)
-and rules written in oso's policy language,
-[Polar](https://docs.osohq.com/using/polar-syntax.html). The oso implementation
+scheme using the [Oso JavaScript library](https://www.npmjs.com/package/oso)
+and rules written in Oso's policy language,
+[Polar](https://docs.osohq.com/using/polar-syntax.html). The Oso implementation
 has four main parts:
 
-* [OsoInstance](src/oso/oso-instance.ts) inherits from the Oso class in the oso
-  javascript module. It configures the oso library to register our domain
+* [OsoInstance](src/oso/oso-instance.ts) inherits from the Oso class in the Oso
+  JavaScript module. It configures the Oso library to register our domain
   classes (`Guest`, `User`, `Document`, and `Project`) so they may be used in
   policy rules and loads and validates the files containing the Polar policy
   rules.
@@ -128,16 +128,18 @@ has four main parts:
   permission to take a specific action on a particular resource (e.g., User may
   edit Document).
 
-* [root.polar](src/oso/root.polar) defines the various roles that will be used
-  in [`policy.polar`](src/oso/policy.polar) for [role-based access control
+* [roles.polar](src/oso/roles.polar) defines the various roles that will be used
+  in [`permissions.polar`](src/oso/permissions.polar) for [role-based access control
   (RBAC)](https://docs.osohq.com/using/examples/rbac.html) and [attribute-based
   access control (ABAC)](https://docs.osohq.com/using/examples/abac.html).
 
-* [policy.polar](src/oso/policy.polar) defines the rules for RBAC and ABAC.
+* [permissions.polar](src/oso/permissions.polar) defines the rules for RBAC and ABAC.
 
 ### Roles
 
-There are four roles defined in [root.polar](src/oso/root.polar): Owner, Admin,
+<!-- @TODO(gj): out of date -- no more admin role -->
+
+There are four roles defined in [roles.polar](src/oso/roles.polar): Owner, Admin,
 Member, and Guest.
 
 Some roles are derived from inheritance:
@@ -257,7 +259,7 @@ decorator](https://docs.nestjs.com/custom-decorators) defined in
 ```
 
 The authorization function passes the "actor", "action", and "resource" to the
-oso rules engine for authorization and throws an exception if not authorized.
+Oso rules engine for authorization and throws an exception if not authorized.
 It resolves the actor (User or Guest) from the request, the action ("read")
 from the argument to the `@Authorize('read')` decorator, and is passed the
 resource (a specific Document object) by the caller.
@@ -265,7 +267,7 @@ resource (a specific Document object) by the caller.
 ### Polar Implementation for Read Authorization
 
 All guests have read access to a document if it isn't marked as `membersOnly`
-(from [policy.polar](src/oso/policy.polar)):
+(from [permissions.polar](src/oso/permissions.polar)):
 
 ```py
 allow(user: Guest, "read", document: Document) if
@@ -315,7 +317,7 @@ allowed:
 $ curl --user john:changeme -X POST http://localhost:3000/document/edit -d '{"documentId": 1, "document": "Some new document text"}'
 ```
 
-### NestJS/Javascript Implementation for Write Authorization
+### NestJS/JavaScript Implementation for Write Authorization
 
 #### Create
 
