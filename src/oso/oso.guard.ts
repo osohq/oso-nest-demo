@@ -13,8 +13,9 @@ import { OsoInstance } from './oso-instance';
 const authorizeLogger = getLogger('@Authorize');
 export const Action = (action: string) => SetMetadata('action', action);
 export const Resource = (resource: any) => SetMetadata('resource', resource);
+export type AuthorizeFn = (resource: any) => void;
 
-export const authorizeFactory = (data: string | undefined, ctx: ExecutionContext) => {
+export const authorizeFactory = (data: string | undefined, ctx: ExecutionContext): AuthorizeFn => {
   authorizeLogger.info('data: ', data);
   const request = ctx.switchToHttp().getRequest();
   const user = request.user;

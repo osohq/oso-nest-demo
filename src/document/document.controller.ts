@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/
 import { getLogger } from 'log4js';
 import { BasicAuthGuard } from '../auth/basic-auth.guard';
 import { OsoInstance } from '../oso/oso-instance';
-import { Authorize, OsoGuard, Resource } from '../oso/oso.guard';
+import { Authorize, AuthorizeFn, OsoGuard, Resource } from '../oso/oso.guard';
 import { DocumentService } from './document.service';
 import { Document } from './entity/document';
 import { CreateDocumentDto, DocumentSetDto, FindDocumentDto } from './dto/document.dto';
@@ -19,14 +19,14 @@ export class DocumentController {
   }
 
   @Get(':id')
-  async findOne(@Param("id") id: string, @Authorize() authorize: any): Promise<FindDocumentDto> | undefined {
+  async findOne(@Param("id") id: string, @Authorize() authorize: AuthorizeFn): Promise<FindDocumentDto> | undefined {
     const document = await this.documentService.findOne(Number.parseInt(id));
     await authorize(document);
     return document ? new FindDocumentDto(document) : undefined;
   }
 
   @Get()
-  async findAll(@Authorize() authorize: any): Promise<DocumentSetDto> {
+  async findAll(@Authorize() authorize: AuthorizeFn): Promise<DocumentSetDto> {
     const authorized: Document[] = [];
     for (const document of await this.documentService.findAll()) {
       try {
@@ -40,13 +40,13 @@ export class DocumentController {
   }
 
   @Post('create')
-  async create(@Authorize() authorize, @Request() request, @Body() document: CreateDocumentDto): Promise<number> {
+  async create(@Authorize() authorize: AuthorizeFn, @Request() request, @Body() document: CreateDocumentDto): Promise<number> {
     document.ownerId = request.user.id;
     return this.documentService.create(document, authorize);
   }
 
   @Post('edit')
-  async edit(@Authorize() authorize,
+  async edit(@Authorize() authorize: AuthorizeFn,
     @Request() request,
     @Body() editAction: EditActionDto): Promise<FindDocumentDto> {
     this.logger.info('Attempt to edit document: id: ', editAction.documentId);

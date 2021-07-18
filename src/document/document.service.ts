@@ -6,7 +6,7 @@ import { CreateDocumentDto } from './dto/document.dto';
 import { Document } from './entity/document';
 import { Comment } from './entity/comment';
 import { EditActionDto } from './dto/edit-action.dto';
-import { Authorize } from 'src/oso/oso.guard';
+import { Authorize, AuthorizeFn } from 'src/oso/oso.guard';
 
 @Injectable()
 export class DocumentService {
@@ -33,7 +33,7 @@ export class DocumentService {
     this.comments = [];
   }
 
-  async create(document: CreateDocumentDto, authorize): Promise<number> {
+  async create(document: CreateDocumentDto, authorize: AuthorizeFn): Promise<number> {
     const id = ++this.sequence;
     const owner: User = this.usersService.findById(document.ownerId);
     if (owner === undefined) {
